@@ -66,6 +66,8 @@ import Data.List.NonEmpty qualified as NE
 import Data.Map (Map)
 import Data.Map qualified as M
 import Data.Maybe (fromMaybe, mapMaybe)
+import Data.MonoidMap (MonoidMap)
+import Data.MonoidMap qualified as MM
 import Data.Set qualified as S
 import Data.Tuple (swap)
 import GHC.Generics (Generic)
@@ -122,7 +124,7 @@ data Robots = Robots
     -- prepend to a list than insert into a 'Set'.
     _waitingRobots :: Map TickNumber [RID]
   , _currentTickWakeableBots :: [RID]
-  , _robotsByLocation :: Map SubworldName (Map Location IntSet)
+  , _robotsByLocation :: Map SubworldName (MonoidMap Location IntSet)
   , -- This member exists as an optimization so
     -- that we do not have to iterate over all "waiting" robots,
     -- since there may be many.
@@ -168,7 +170,7 @@ currentTickWakeableBots :: Lens' Robots [RID]
 --   location of a robot changes, or a robot is created or destroyed.
 --   Fortunately, there are relatively few ways for these things to
 --   happen.
-robotsByLocation :: Lens' Robots (Map SubworldName (Map Location IntSet))
+robotsByLocation :: Lens' Robots (Map SubworldName (MonoidMap Location IntSet))
 
 -- | Get a list of all the robots that are \"watching\" by location.
 robotsWatching :: Lens' Robots (Map (Cosmic Location) IntSet)
@@ -202,7 +204,7 @@ initRobots gsc =
     , _activeRobots = IS.empty
     , _waitingRobots = M.empty
     , _currentTickWakeableBots = mempty
-    , _robotsByLocation = M.empty
+    , _robotsByLocation = mempty
     , _robotsWatching = mempty
     , _robotNaming =
         RobotNaming
@@ -268,9 +270,9 @@ addRobotToLocation :: (Has (State Robots) sig m) => RID -> Cosmic Location -> m 
 addRobotToLocation rid rLoc =
   robotsByLocation
     %= M.insertWith
-      (M.unionWith IS.union)
+      (MM.unionWith IS.union)
       (rLoc ^. subworld)
-      (M.singleton (rLoc ^. planar) (IS.singleton rid))
+      (MM.singleton (rLoc ^. planar) (IS.singleton rid))
 
 -- | Takes a robot out of the 'activeRobots' set and puts it in the 'waitingRobots'
 --   queue.
@@ -416,10 +418,10 @@ removeRobotFromLocationMap ::
 removeRobotFromLocationMap (Cosmic oldSubworld oldPlanar) rid =
   robotsByLocation %= M.update (tidyDelete rid) oldSubworld
  where
-  deleteOne x = surfaceEmpty IS.null . IS.delete x
+  deleteOne x = IS.delete x
 
   tidyDelete robID =
-    surfaceEmpty M.null . M.update (deleteOne robID) oldPlanar
+    surfaceEmpty MM.null . MM.adjust (deleteOne robID) oldPlanar
 
 setRobotInfo :: RID -> [Robot] -> Robots -> Robots
 setRobotInfo baseID robotList rState =
@@ -440,9 +442,9 @@ setRobotList robotList rState =
   groupRobotsBySubworld =
     binTuples . map (view (robotLocation . subworld) &&& id)
 
-  groupRobotsByPlanarLocation :: [Robot] -> Map Location IntSet
+  groupRobotsByPlanarLocation :: [Robot] -> MonoidMap Location IntSet
   groupRobotsByPlanarLocation rs =
-    M.fromListWith
+    MM.fromListWith
       IS.union
       (map (view (robotLocation . planar) &&& (IS.singleton . view robotID)) rs)
 

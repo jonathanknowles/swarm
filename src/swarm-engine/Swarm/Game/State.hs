@@ -90,6 +90,7 @@ import Data.IntMap qualified as IM
 import Data.IntSet qualified as IS
 import Data.Map qualified as M
 import Data.Maybe (fromMaybe, mapMaybe)
+import Data.MonoidMap qualified as MM
 import Data.Sequence (Seq ((:<|)))
 import Data.Sequence qualified as Seq
 import Data.Text (Text)
@@ -228,8 +229,8 @@ winSolution :: Lens' GameState (Maybe TSyntax)
 robotsAtLocation :: Cosmic Location -> GameState -> [Robot]
 robotsAtLocation loc gs =
   mapMaybe (`IM.lookup` (gs ^. robotInfo . robotMap))
-    . maybe [] IS.toList
-    . M.lookup (loc ^. planar)
+    . IS.toList
+    . MM.get (loc ^. planar)
     . M.findWithDefault mempty (loc ^. subworld)
     . view (robotInfo . robotsByLocation)
     $ gs
@@ -247,7 +248,8 @@ robotsInArea (Cosmic subworldName o) d rs = mapMaybe (rm IM.!?) rids
   rids =
     concatMap IS.elems $
       getElemsInArea o d $
-        M.findWithDefault mempty subworldName rl
+        MM.toMap $
+          M.findWithDefault mempty subworldName rl
 
 -- | The base robot, if it exists.
 baseRobot :: Traversal' GameState Robot
