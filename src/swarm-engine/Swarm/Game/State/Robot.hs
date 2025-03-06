@@ -270,7 +270,7 @@ addRobotToLocation :: (Has (State Robots) sig m) => RID -> Cosmic Location -> m 
 addRobotToLocation rid rLoc =
   robotsByLocation
     %= M.insertWith
-      (MM.unionWith IS.union)
+      MM.union
       (rLoc ^. subworld)
       (MM.singleton (rLoc ^. planar) (IS.singleton rid))
 
