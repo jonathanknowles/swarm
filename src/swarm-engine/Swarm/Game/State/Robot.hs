@@ -424,11 +424,14 @@ setRobotList :: [Robot] -> Robots -> Robots
 setRobotList robotList rState =
   rState
     & robotMap .~ IM.fromList (map (view robotID &&& id) robotList)
-    & robotsByLocation .~ MM.map (groupRobotsByPlanarLocation) (groupRobotsBySubworld robotList)
+    & robotsByLocation .~ groupRobotsByLocation robotList
     & internalActiveRobots .~ setOf (traverse . robotID) robotList
     & robotNaming . gensym .~ initGensym
  where
   initGensym = length robotList - 1
+
+  groupRobotsByLocation rs =
+    MM.map (groupRobotsByPlanarLocation) (groupRobotsBySubworld rs)
 
   groupRobotsBySubworld :: [Robot] -> MonoidMap SubworldName [Robot]
   groupRobotsBySubworld = foldr f mempty
