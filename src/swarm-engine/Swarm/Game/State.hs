@@ -246,10 +246,10 @@ robotsInArea (Cosmic subworldName o) d rs = mapMaybe (rm IM.!?) rids
   rm = rs ^. robotMap
   rl = rs ^. robotsByLocation
   rids =
-    concatMap IS.elems $
-      getElemsInArea o d $
-        MM.toMap $
-          MM.get subworldName rl
+    concatMap IS.elems
+      . getElemsInArea o d
+      . MM.toMap
+      $ MM.get subworldName rl
 
 -- | The base robot, if it exists.
 baseRobot :: Traversal' GameState Robot
