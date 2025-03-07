@@ -893,7 +893,6 @@ library swarm-util
     lens,
     megaparsec,
     minimorph,
-    monoidmap,
     mtl,
     prettyprinter,
     servant-docs,
