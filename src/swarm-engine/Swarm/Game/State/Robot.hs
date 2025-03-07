@@ -436,9 +436,11 @@ setRobotList robotList rState =
  where
   initGensym = length robotList - 1
 
+  groupRobotsBySubworld :: [Robot] -> Map SubworldName (NE.NonEmpty Robot)
   groupRobotsBySubworld =
     binTuples . map (view (robotLocation . subworld) &&& id)
 
+  groupRobotsByPlanarLocation :: [Robot] -> Map Location IntSet
   groupRobotsByPlanarLocation rs =
     M.fromListWith
       IS.union
