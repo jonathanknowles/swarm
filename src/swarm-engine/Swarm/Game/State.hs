@@ -231,7 +231,7 @@ robotsAtLocation loc gs =
   mapMaybe (`IM.lookup` (gs ^. robotInfo . robotMap))
     . IS.toList
     . MM.get (loc ^. planar)
-    . M.findWithDefault mempty (loc ^. subworld)
+    . MM.get (loc ^. subworld)
     . view (robotInfo . robotsByLocation)
     $ gs
 
@@ -249,7 +249,7 @@ robotsInArea (Cosmic subworldName o) d rs = mapMaybe (rm IM.!?) rids
     concatMap IS.elems $
       getElemsInArea o d $
         MM.toMap $
-          M.findWithDefault mempty subworldName rl
+          MM.get subworldName rl
 
 -- | The base robot, if it exists.
 baseRobot :: Traversal' GameState Robot

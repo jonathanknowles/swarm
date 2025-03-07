@@ -511,7 +511,7 @@ execConst runChildProg c vs s k = do
               excludeSelf = (`IS.difference` IS.singleton selfRid)
               botsHere (Cosmic swName loc) =
                 MM.get loc $
-                  M.findWithDefault mempty swName botsByLocs
+                  MM.get swName botsByLocs
               botIsVisible = maybe False canSee . (`IM.lookup` rMap)
               canSee = not . (^. robotDisplay . invisible)
 
