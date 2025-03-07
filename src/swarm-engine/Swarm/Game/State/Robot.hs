@@ -435,10 +435,9 @@ setRobotList robotList rState =
     binTuplesToMonoidMap . map (view (robotLocation . subworld) &&& id)
 
   groupRobotsByPlanarLocation :: [Robot] -> MonoidMap Location IntSet
-  groupRobotsByPlanarLocation rs =
-    MM.fromListWith
-      IS.union
-      (map (view (robotLocation . planar) &&& (IS.singleton . view robotID)) rs)
+  groupRobotsByPlanarLocation = foldr f mempty
+    where
+      f r = MM.adjust (IS.insert (r ^. robotID)) (r ^. (robotLocation . planar))
 
 -- | Modify the 'viewCenter' by applying an arbitrary function to the
 --   current value.  Note that this also modifies the 'viewCenterRule'
