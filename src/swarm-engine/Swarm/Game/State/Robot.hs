@@ -412,12 +412,8 @@ removeRobotFromLocationMap ::
   RID ->
   m ()
 removeRobotFromLocationMap (Cosmic oldSubworld oldPlanar) rid =
-  robotsByLocation %= MM.adjust (tidyDelete rid) oldSubworld
- where
-  deleteOne x = IS.delete x
-
-  tidyDelete robID =
-    MM.adjust (deleteOne robID) oldPlanar
+  robotsByLocation
+    %= MM.adjust (MM.adjust (IS.delete rid) oldPlanar) oldSubworld
 
 setRobotInfo :: RID -> [Robot] -> Robots -> Robots
 setRobotInfo baseID robotList rState =
