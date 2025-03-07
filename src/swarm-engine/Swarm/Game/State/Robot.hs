@@ -430,18 +430,10 @@ setRobotList robotList rState =
  where
   initGensym = length robotList - 1
 
-  groupRobotsByLocation rs =
-    MM.map (groupRobotsByPlanarLocation) (groupRobotsBySubworld rs)
-
-  groupRobotsBySubworld :: [Robot] -> MonoidMap SubworldName [Robot]
-  groupRobotsBySubworld = foldr f mempty
-    where
-      f r = MM.adjust (r :) (r ^. (robotLocation . subworld))
-
-  groupRobotsByPlanarLocation :: [Robot] -> MonoidMap Location IntSet
-  groupRobotsByPlanarLocation = foldr f mempty
-    where
-      f r = MM.adjust (IS.insert (r ^. robotID)) (r ^. (robotLocation . planar))
+  groupRobotsByLocation = foldr f mempty
+   where
+    f r = MM.adjust (g r) (r ^. (robotLocation . subworld))
+    g r = MM.adjust (IS.insert (r ^. robotID)) (r ^. (robotLocation . planar))
 
 -- | Modify the 'viewCenter' by applying an arbitrary function to the
 --   current value.  Note that this also modifies the 'viewCenterRule'
