@@ -21,6 +21,7 @@ module Swarm.Util (
   indexWrapNonEmpty,
   uniq,
   binTuples,
+  binTuplesToMonoidMap,
   histogram,
   findDup,
   both,
@@ -104,6 +105,8 @@ import Data.List.NonEmpty qualified as NE
 import Data.Map (Map)
 import Data.Map qualified as M
 import Data.Maybe (fromMaybe)
+import Data.MonoidMap (MonoidMap)
+import Data.MonoidMap qualified as MM
 import Data.Ord (comparing)
 import Data.Set (Set)
 import Data.Set qualified as S
@@ -216,6 +219,10 @@ binTuples ::
 binTuples = foldr f mempty
  where
   f = uncurry (M.insertWith (<>)) . fmap pure
+
+-- | Like 'binTuples', but produces a 'MonoidMap'.
+binTuplesToMonoidMap :: (Foldable t, Ord a) => t (a, b) -> MonoidMap a [b]
+binTuplesToMonoidMap = foldr (\(a, b) -> MM.adjust (b :) a) mempty
 
 -- | Count occurrences of a value
 histogram ::
