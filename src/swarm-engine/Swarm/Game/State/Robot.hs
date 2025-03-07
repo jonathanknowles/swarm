@@ -78,7 +78,7 @@ import Swarm.Game.State.Config
 import Swarm.Game.Tick
 import Swarm.Game.Universe as U
 import Swarm.ResourceLoading (NameGenerator)
-import Swarm.Util (binTuplesToMonoidMap, (<+=), (<<.=))
+import Swarm.Util ((<+=), (<<.=))
 import Swarm.Util.Lens (makeLensesExcluding)
 
 -- | The 'ViewCenterRule' specifies how to determine the center of the
@@ -431,8 +431,9 @@ setRobotList robotList rState =
   initGensym = length robotList - 1
 
   groupRobotsBySubworld :: [Robot] -> MonoidMap SubworldName [Robot]
-  groupRobotsBySubworld =
-    binTuplesToMonoidMap . map (view (robotLocation . subworld) &&& id)
+  groupRobotsBySubworld = foldr f mempty
+    where
+      f r = MM.adjust (r :) (r ^. (robotLocation . subworld))
 
   groupRobotsByPlanarLocation :: [Robot] -> MonoidMap Location IntSet
   groupRobotsByPlanarLocation = foldr f mempty
